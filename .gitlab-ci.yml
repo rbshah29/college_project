@@ -1,0 +1,42 @@
+test:
+    stage: test
+    tags:
+        - dalfcs_docker_autoscale
+    image: gradle:7.3.3-jdk17-alpine
+    script:
+        - chmod +x gradlew
+        - ./gradlew check
+build:
+    stage: build
+    tags:
+        - dalfcs_docker_autoscale
+    image: gradle:7.3.3-jdk17-alpine
+    script:
+        - chmod +x gradlew
+        - ./gradlew assemble --scan
+deploy-init:
+    stage: deploy
+    image: ruby:3.2-rc
+    tags:
+        - dalfcs_docker_autoscale
+    script:
+        - apt-get update -yq
+        - apt-get install -y ruby-dev
+        - gem install dpl
+        - dpl --provider=heroku --app=$heroku_app_name1 --api_key=$heroku_api_value1
+    only:
+        - develop
+deploy-final:
+    stage: deploy
+    image: ruby:3.2-rc
+    tags:
+        - dalfcs_docker_autoscale
+    script:
+        - apt-get update -yq
+        - apt-get install -y ruby-dev    
+        - gem install dpl            
+        - dpl --provider=heroku --app=$heroku_app_name1 --api_key=$heroku_api_value1
+    only:
+        - main
+
+#Reference: https://docs.gitlab.com/ee/ci/examples/deployment/index.html
